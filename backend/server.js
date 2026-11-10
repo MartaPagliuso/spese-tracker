@@ -1,27 +1,14 @@
 require('dotenv').config();
 
 const express = require('express');
-const { Pool } = require('pg');
+const portafogliRouter = require('./routes/portafogli');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// per leggere il file env e prendere la connessione al db
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+app.use(express.json());
 
-pool.on('error', (err) => console.error('Errore sul pool:', err));
-
-app.get('/api/portafogli', async (req, res)  => {
-  try {
-    const result = await pool.query('SELECT id, portafoglio, saldo FROM saldo_portafoglio ORDER BY portafoglio');
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Errore nel leggere i portafogli: ', error);
-    res.status(500).json({ errore: 'Errore interno del server' });
-  }
-});
+app.use('/api/portafogli', portafogliRouter);
 
 app.listen(PORT, () => {
   console.log(`Server avviato sulla porta ${PORT}`);

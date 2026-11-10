@@ -1,0 +1,142 @@
+### Dati di prova : Contanti 56,70, Risparmi 200,00, Conto corrente 798,10
+
+@url = http://localhost:3000
+@cc = 1
+@contanti = 2
+@risparmi = 3
+
+### 1. Contanti → Risparmi, 20,00 (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{risparmi}},
+  "importo": 20.00
+}
+
+### 2. Contanti → Risparmi, 1000,00 (atteso: 409)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{risparmi}},
+  "importo": 1000.00
+}
+
+### 3. Importo uguale a tutto il saldo rimasto, 36.70 (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{risparmi}},
+  "importo": 36.70
+}
+
+### 4. Un centesimo con saldo a zero (atteso: 409)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{risparmi}},
+  "importo": 0.01
+}
+
+### 5. Valido con data e da un altro portafoglio (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": 50.00,
+  "data": "2026-11-05"
+}
+
+### 6. Origine uguale a destinazione, numeri (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": {{cc}},
+  "importo": 10
+}
+
+### 7. Origine uguale a destinazione, stringa e numero (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": "{{cc}}",
+  "portafoglio_destinazione_id": {{cc}},
+  "importo": 10
+}
+
+### 8. Origine inesistente (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": 9999,
+  "portafoglio_destinazione_id": {{cc}},
+  "importo": 10
+}
+
+### 9. Destinazione inesistente (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": 9999,
+  "importo": 10
+}
+
+### 10. Importo zero (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": 0
+}
+
+### 11. Importo negativo (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": -5
+}
+
+### 12. Importo non numerico (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": "abc"
+}
+
+### 13. Corpo vuoto (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+### 14. Data non valida (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{cc}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": 10,
+  "data": "2026-13-45"
+}

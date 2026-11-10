@@ -1,0 +1,50 @@
+### 1. Movimento valido (atteso: 201)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{
+  "portafoglio_id": 1,
+  "categoria_id": 4,
+  "importo": 12.5,
+  "descrizione": "Colazione"
+}
+
+### 2. Importo zero (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": 1, "categoria_id": 4, "importo": 0 }
+
+### 3. Importo negativo (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": 1, "categoria_id": 4, "importo": -5 }
+
+### 4. Importo non numerico (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": 1, "categoria_id": 4, "importo": "abc" }
+
+### 5. Corpo vuoto (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+### 6. Portafoglio inesistente (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": 9999, "categoria_id": 4, "importo": 10 }
+
+### 7. Id non numerico (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": "abc", "categoria_id": 4, "importo": 10 }
+
+### 8. Data non valida (atteso: 400)
+POST http://localhost:3000/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": 1, "categoria_id": 4, "importo": 10, "data": "2026-13-45" }

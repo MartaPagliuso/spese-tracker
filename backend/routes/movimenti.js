@@ -3,6 +3,8 @@ const pool = require('../db');
 
 const router = express.Router();
 
+// -------------- GET -------------- 
+
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -18,6 +20,41 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Errore nel leggere i movimenti: ', error);
     res.status(500).json({ errore: 'Errore interno al server'});
+  }
+});
+
+// -------------- POST --------------
+
+router.post('/', async (req, res) => {
+  const { portafoglio_id, categoria_id, importo, data, descrizione } = req.body ?? {};
+
+  if (portafoglio_id == null || categoria_id == null || importo == null)
+    return res.status(400).json({ errore: 'Il portafoglio, la categoria e l\'importo sono obbligatori.' });
+
+  const valore = Number(importo);
+
+  if (!Number.isFinite(valore) || valore < 0)
+    return res.status(400).json({ errore: 'L\'importo deve essere maggiore di 0.' });
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO movimento (portafoglio_id, categoria_id, importo, data, descrizione)
+      VALUES ($1, $2, $3, COALESCE($4::date, CURRENT_DATE), $5)
+      RETURNING id, portafoglio_id, categoria_id, importo, data::text as data, descrizione`,
+      [portafoglio_id, categoria_id, importo, data ?? null, descrizione ?? null]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    if (error.code === '23503')
+      return res.status(400).json({ errore: 'Portafoglio o categoria inesistenti.' });
+    if (error.code === '23514')
+      return res.status(400).json({ errore: 'Dati non validi.' });
+    if (error.code?.startsWith('22'))
+      return res.status(400).json({ errore: 'Formato dei dati non valido.' });
+
+    console.error('Errore nel creare il movimento: ', error);
+    return res.status(500).json({ errore: 'Errore interno del server.' });
   }
 });
 

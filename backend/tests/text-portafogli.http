@@ -1,0 +1,38 @@
+@url = http://localhost:3000
+
+### 1. Portafoglio valido (atteso: 201)
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "Vacanze" }
+
+### 2. Stesso nome, seconda volta (atteso: 409)
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "Vacanze" }
+
+### 3. Corpo vuoto (atteso: 400)
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+### 4. Nome fatto solo di spazi (atteso: 400)
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "   " }
+
+### 5. Nome numerico (atteso: 400)
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": 123 }
+
+### 6. Nome con spazi attorno (atteso: 201, nome salvato come "Regali")
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "  Regali  " }
+
+### 7. Controllo: i nuovi portafogli compaiono con saldo 0
+GET {{url}}/api/portafogli

@@ -3,7 +3,7 @@ const pool = require('../db');
 
 const router = express.Router();
 
-// -------------- GET -------------- 
+// -------------- GET --------------
 
 router.get('/', async (req, res) => {
   try {
@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
 
   } catch (error) {
     console.error('Errore nel leggere i movimenti: ', error);
-    res.status(500).json({ errore: 'Errore interno al server'});
+    res.status(500).json({ errore: 'Errore interno del server'});
   }
 });
 

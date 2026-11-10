@@ -27,4 +27,39 @@ router.get('/', async (req, res) => {
   }
 });
 
+// -------------- POST --------------
+
+router.post('/', async (req, res) => {
+  const { nome, tipo } = req.body ?? {};
+
+  if (typeof nome !== 'string' || typeof tipo !== 'string')
+    return res.status(400).json({ errore: 'Il nome e il tipo sono obbligatori.' });
+
+  const nomePulito = nome.trim();
+  const tipoPulito = tipo.trim();
+
+  if (nomePulito === '')
+    return res.status(400).json({ errore: 'Il nome non può essere vuoto' });
+
+  if (!['entrata', 'uscita'].includes(tipoPulito))
+    return res.status(400).json({ errore: 'Tipo inserito non valido.' });
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO categoria (nome, tipo)
+      VALUES ($1, $2)
+      RETURNING id, nome, tipo`,
+      [nomePulito, tipoPulito]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    if (error.code === '23505')
+      return res.status(409).json({ errore: 'Categoria già esistente.' });
+
+    console.error('Errore nella creazione della categoria: ', error);
+    return res.status(500).json({ errore: 'Errore interno del server.' });
+  }
+});
+
 module.exports = router;

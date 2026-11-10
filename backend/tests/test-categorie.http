@@ -1,0 +1,46 @@
+### 1. Categoria valida (atteso: 201)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "nome": "Palestra", "tipo": "uscita" }
+### 2. Inserimento di una categoria già esistente (atteso: 409)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "nome": "Palestra", "tipo": "uscita" }
+
+### 3. Corpo vuoto (atteso: 400)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ }
+
+### 4. Tipo mancante (atteso: 400)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "nome": "Palestra" }
+
+### 5. Nome mancante (atteso: 400)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "tipo": "uscita" }
+
+### 6. Tipo nome errato (atteso: 400)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "nome": 123, "tipo": "uscita" }
+
+### 6. Valore di tipo errato (atteso: 400)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "nome": "Palestra", "tipo": "pippo" }
+
+### 7. Input corretti con spazi (atteso: 201)
+POST http://localhost:3000/api/categorie
+Content-Type: application/json
+
+{ "nome": "   Libri    ", "tipo": "uscita  " }

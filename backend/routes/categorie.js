@@ -62,4 +62,32 @@ router.post('/', async (req, res) => {
   }
 });
 
+// -------------- DELETE --------------
+
+router.delete('/:id', async(req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM categoria WHERE id = $1 RETURNING id`, [id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ errore: 'La categoria che si vuole eliminare non esiste' });
+
+    res.status(204).send();
+  } catch (error) {
+    if (error.code?.startsWith('22'))
+      return res.status(400).json({ errore: 'Tipo di dato non valido.' });
+    if (error.code === '23503' || error.code === '23001')
+      return res.status(409).json({ errore: 'La categoria è usata da dei movimenti e non può essere eliminata.' });
+    
+    console.error('Errore durante l\'eliminazione di una categoria: ', error);
+    return res.status(500).json({ errore: 'Errore interno del server' });
+  }
+});
+
+
+
+
 module.exports = router;

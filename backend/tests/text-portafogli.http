@@ -1,4 +1,6 @@
 @url = http://localhost:3000
+@cc = 1
+@risparmi = 3
 
 ### 1. Portafoglio valido (atteso: 201)
 POST {{url}}/api/portafogli
@@ -35,4 +37,34 @@ Content-Type: application/json
 { "nome": "  Regali  " }
 
 ### 7. Controllo: i nuovi portafogli compaiono con saldo 0
+GET {{url}}/api/portafogli
+
+### --------------------- TEST DELETE ---------------------
+
+### 1. Creo un portafoglio di prova (atteso: 201)
+# @name nuovoPortafoglio
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "Da eliminare" }
+
+### 2. Lo elimino (atteso: 204)
+DELETE {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+
+### 3. Lo elimino di nuovo (atteso: 404)
+DELETE {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+
+### 4. Id inesistente (atteso: 404)
+DELETE {{url}}/api/portafogli/9999
+
+### 5. Id non numerico (atteso: 400)
+DELETE {{url}}/api/portafogli/abc
+
+### 6. Portafoglio con movimenti, il Conto corrente (atteso: 409)
+DELETE {{url}}/api/portafogli/{{cc}}
+
+### 7. Portafoglio con soli trasferimenti in arrivo, Risparmi (atteso: 409)
+DELETE {{url}}/api/portafogli/{{risparmi}}
+
+### 8. Controllo finale: i tre portafogli originali, con i saldi di prima
 GET {{url}}/api/portafogli

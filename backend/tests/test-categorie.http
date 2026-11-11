@@ -1,3 +1,6 @@
+@url = http://localhost:3000
+@cibo = 4
+
 ### 1. Categoria valida (atteso: 201)
 POST http://localhost:3000/api/categorie
 Content-Type: application/json
@@ -44,3 +47,30 @@ POST http://localhost:3000/api/categorie
 Content-Type: application/json
 
 { "nome": "   Libri    ", "tipo": "uscita  " }
+
+### -------------------- TEST DELETE --------------------
+
+### 1. Creo una categoria di prova (atteso: 201)
+# @name nuovaCategoria
+POST {{url}}/api/categorie
+Content-Type: application/json
+
+{ "nome": "Da eliminare", "tipo": "uscita" }
+
+### 2. La elimino (atteso: 204)
+DELETE {{url}}/api/categorie/{{nuovaCategoria.response.body.id}}
+
+### 3. La elimino di nuovo (atteso: 404)
+DELETE {{url}}/api/categorie/{{nuovaCategoria.response.body.id}}
+
+### 4. Id inesistente (atteso: 404)
+DELETE {{url}}/api/categorie/9999
+
+### 5. Id non numerico (atteso: 400)
+DELETE {{url}}/api/categorie/abc
+
+### 6. Categoria usata da dei movimenti, Cibo (atteso: 409)
+DELETE {{url}}/api/categorie/{{cibo}}
+
+### 7. Controllo finale: le sei categorie originali
+GET {{url}}/api/categorie

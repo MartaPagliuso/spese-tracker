@@ -86,6 +86,18 @@ router.patch('/:id', async(req, res) => {
     return res.status(400).json({ errore: 'Tipo di dato non valido.' });
 
   try {
+    if (archiviato) {
+      const controllo = await pool.query(
+        `SELECT saldo = 0 AS azzerato FROM saldo_portafoglio WHERE id = $1`, [id]
+      );
+
+      if (controllo.rows.length === 0)
+        return res.status(404).json({ errore: 'Il portafoglio non esiste' });
+
+      if (controllo.rows[0].azzerato === false)
+        return res.status(409).json({ errore: 'Il portafoglio ha ancora un saldo: trasferiscilo altrove prima di archiviarlo.'});
+    }
+
     const result = await pool.query(
       `UPDATE portafoglio SET archiviato = $2
       WHERE id = $1 RETURNING id, nome, archiviato`,

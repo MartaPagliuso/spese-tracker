@@ -1,0 +1,217 @@
+@url = http://localhost:3000
+@cc = 1
+@contanti = 2
+@risparmi = 3
+@cibo = 4
+
+### ===== PARTE A: PATCH /api/portafogli/:id =====
+
+### A1. Creo il portafoglio "Test A" (atteso: 201)
+# @name walletA
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "Test A" }
+
+### A2. Lo archivio, saldo 0 (atteso: 200, archiviato true)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### A3. Lo riattivo (atteso: 200, archiviato false)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": false }
+
+### A4. Valore non booleano (atteso: 400)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": "true" }
+
+### A5. Corpo senza il campo (atteso: 400)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ }
+
+### A6. Id inesistente (atteso: 404)
+PATCH {{url}}/api/portafogli/9999
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### A7. Id non numerico (atteso: 400)
+PATCH {{url}}/api/portafogli/abc
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### A8. Archivio il Conto corrente, saldo diverso da zero (atteso: 409)
+PATCH {{url}}/api/portafogli/{{cc}}
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### A9. Sposto 10 euro da Contanti a Test A (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{walletA.response.body.id}},
+  "importo": 10,
+  "descrizione": "test archiviati"
+}
+
+### A10. Archivio Test A con saldo 10 (atteso: 409)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### A11. Rimando i 10 euro indietro (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{walletA.response.body.id}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": 10,
+  "descrizione": "test archiviati"
+}
+
+### A12. Archivio Test A, saldo di nuovo 0 (atteso: 200)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### ===== PARTE B: POST /api/movimenti (Test A è archiviato) =====
+
+### B1. Movimento su portafoglio archiviato (atteso: 409)
+POST {{url}}/api/movimenti
+Content-Type: application/json
+
+{
+  "portafoglio_id": {{walletA.response.body.id}},
+  "categoria_id": {{cibo}},
+  "importo": 5
+}
+
+### B2. Portafoglio inesistente (atteso: 400)
+POST {{url}}/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": 9999, "categoria_id": {{cibo}}, "importo": 5 }
+
+### B3. Importo zero (atteso: 400)
+POST {{url}}/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": {{cc}}, "categoria_id": {{cibo}}, "importo": 0 }
+
+### B4. Id portafoglio non numerico (atteso: 400)
+POST {{url}}/api/movimenti
+Content-Type: application/json
+
+{ "portafoglio_id": "abc", "categoria_id": {{cibo}}, "importo": 5 }
+
+### B5. Riattivo Test A (atteso: 200)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": false }
+
+### B6. Movimento sul portafoglio riattivato (atteso: 201)
+# @name movTest
+POST {{url}}/api/movimenti
+Content-Type: application/json
+
+{
+  "portafoglio_id": {{walletA.response.body.id}},
+  "categoria_id": {{cibo}},
+  "importo": 5,
+  "descrizione": "test archiviati"
+}
+
+### B7. Cancello quel movimento (atteso: 204)
+DELETE {{url}}/api/movimenti/{{movTest.response.body.id}}
+
+### ===== PARTE C: POST /api/trasferimenti =====
+
+### C1. Archivio di nuovo Test A, saldo 0 (atteso: 200)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### C2. Origine archiviata (atteso: 409)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{walletA.response.body.id}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": 1
+}
+
+### C3. Destinazione archiviata (atteso: 409)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{walletA.response.body.id}},
+  "importo": 1
+}
+
+### C4. Destinazione inesistente (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{ "portafoglio_origine_id": {{contanti}}, "portafoglio_destinazione_id": 9999, "importo": 1 }
+
+### C5. Origine inesistente (atteso: 400)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{ "portafoglio_origine_id": 9999, "portafoglio_destinazione_id": {{contanti}}, "importo": 1 }
+
+### C6. Riattivo Test A (atteso: 200)
+PATCH {{url}}/api/portafogli/{{walletA.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": false }
+
+### C7. Contanti -> Test A, 5 euro (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{contanti}},
+  "portafoglio_destinazione_id": {{walletA.response.body.id}},
+  "importo": 5,
+  "descrizione": "test archiviati"
+}
+
+### C8. Test A -> Contanti, 5 euro (atteso: 201)
+POST {{url}}/api/trasferimenti
+Content-Type: application/json
+
+{
+  "portafoglio_origine_id": {{walletA.response.body.id}},
+  "portafoglio_destinazione_id": {{contanti}},
+  "importo": 5,
+  "descrizione": "test archiviati"
+}
+
+### ===== CONTROLLO FINALE =====
+
+### F1. Saldi finali
+GET {{url}}/api/portafogli
+
+### F2. Trasferimenti
+GET {{url}}/api/trasferimenti

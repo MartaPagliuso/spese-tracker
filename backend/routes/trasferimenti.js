@@ -54,6 +54,25 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ errore: 'Portafoglio di origine inesistente.' });
     }
 
+    if (origine.rows[0].archiviato) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ errore: 'Il portafoglio di origine è archiviato' });
+    }
+
+    const destinazione = await client.query(
+      `SELECT archiviato FROM portafoglio WHERE id = $1`, [portafoglio_destinazione_id]
+    );
+
+    if (destinazione.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ errore: 'Il portafoglio di destinazione è inesistente.' });
+    }
+
+    if (destinazione.rows[0].archiviato) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ errore: 'Il portafoglio di destinazione è archiviato' });
+    }
+
     // controllo il saldo, confrontando direttamente in SQL
     const controllo = await client.query(
       'SELECT saldo >= $2::numeric AS sufficiente FROM saldo_portafoglio WHERE id = $1',
@@ -81,7 +100,8 @@ router.post('/', async (req, res) => {
     
     if (error.code === '23503')
       return res.status(400).json({ errore: 'Portafogli inesistenti' });
-
+    if (error.code === '23514')
+      return res.status(400).json({ errore: 'Dati non validi' });
     if (error.code?.startsWith('22'))
       return res.status(400).json({ errore: 'Formato dei dati non valido.' });
 

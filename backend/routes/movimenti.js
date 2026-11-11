@@ -33,10 +33,20 @@ router.post('/', async (req, res) => {
 
   const valore = Number(importo);
 
-  if (!Number.isFinite(valore) || valore < 0)
+  if (!Number.isFinite(valore) || valore <= 0)
     return res.status(400).json({ errore: 'L\'importo deve essere maggiore di 0.' });
 
   try {
+    const controllo = await pool.query(
+      `SELECT archiviato FROM portafoglio WHERE id = $1`, [portafoglio_id]
+    );
+
+    if (controllo.rows.length === 0) 
+      return res.status(400).json({ errore: 'Portafoglio inesistente'});
+
+    if (controllo.rows[0].archiviato === true)
+      return res.status(409).json({ errore: 'Il portafoglio è archiviato' });
+
     const result = await pool.query(
       `INSERT INTO movimento (portafoglio_id, categoria_id, importo, data, descrizione)
       VALUES ($1, $2, $3, COALESCE($4::date, CURRENT_DATE), $5)

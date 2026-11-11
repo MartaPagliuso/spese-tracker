@@ -58,4 +58,30 @@ router.post('/', async (req, res) => {
   }
 });
 
+// -------------- DELETE --------------
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query(
+      `DELETE FROM movimento WHERE id = $1 RETURNING id`, [id]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ errore: 'Movimento non trovato.' });
+
+    res.status(204).send();
+
+  } catch (error) {
+    if (error.code?.startsWith('22'))
+      return res.status(400).json({ errore: 'Tipo di dato non valido.' });
+
+    console.error('Errore durante l\'eliminazione del movimento: ', error);
+    return res.status(500).json({ errore: 'Errore interno del server.' });
+  }
+});
+
+
+
 module.exports = router;

@@ -48,3 +48,21 @@ POST http://localhost:3000/api/movimenti
 Content-Type: application/json
 
 { "portafoglio_id": 1, "categoria_id": 4, "importo": 10, "data": "2026-13-45" }
+
+### ------------------------ TEST DELETE ------------------------
+
+### 1. Eliminazione con successo (atteso: 204)
+DELETE http://localhost:3000/api/movimenti/1
+Content-Type: application/json
+
+### 2. Eliminazione di un movimento già eliminato (atteso: 404)
+DELETE http://localhost:3000/api/movimenti/1
+Content-Type: application/json
+
+### 3. Eliminazione di un movimento non esistente (atteso: 404)
+DELETE http://localhost:3000/api/movimenti/9999
+Content-Type: application/json
+
+### 4. Inserimento di un id non valido (atteso: 400)
+DELETE http://localhost:3000/api/movimenti/abc
+Content-Type: application/json

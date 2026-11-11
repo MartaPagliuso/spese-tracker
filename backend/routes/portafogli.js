@@ -76,5 +76,34 @@ router.delete('/:id', async(req, res) => {
   }
 });
 
+// -------------- PATCH --------------
+
+router.patch('/:id', async(req, res) => {
+  const { archiviato } = req.body ?? {};
+  const { id } = req.params;
+
+  if (typeof archiviato !== 'boolean')
+    return res.status(400).json({ errore: 'Tipo di dato non valido.' });
+
+  try {
+    const result = await pool.query(
+      `UPDATE portafoglio SET archiviato = $2
+      WHERE id = $1 RETURNING id, nome, archiviato`,
+      [id, archiviato]
+    );
+
+    if (result.rows.length === 0)
+      return res.status(404).json({ errore: 'Il portafoglio non esiste.' });
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    if (error.code?.startsWith('22'))
+      return res.status(400).json({ errore: 'Tipo di dato non valido.' });
+
+    console.error('Errore durante la modifica del portafoglio: ', error);
+    return res.status(500).json({ errore: 'Errore interno del server.' });
+  }
+});
+
 
 module.exports = router;

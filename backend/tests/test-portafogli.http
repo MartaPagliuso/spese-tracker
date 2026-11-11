@@ -68,3 +68,52 @@ DELETE {{url}}/api/portafogli/{{risparmi}}
 
 ### 8. Controllo finale: i tre portafogli originali, con i saldi di prima
 GET {{url}}/api/portafogli
+
+### --------------------- TEST PATCH ---------------------
+
+### 1. Creo un portafoglio di prova (atteso: 201)
+# @name nuovoPortafoglio
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "Da modificare" }
+
+### 2. archiviato = true sul nuovo portafoglio (atteso: 200)
+PATCH {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### 3. archiviato = false sullo stesso id (atteso: 200)
+PATCH {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": false }
+
+### 4. Tipo di dato non valido (atteso: 400)
+PATCH {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+Content-Type: application/json
+
+{ "archiviato": "false" }
+
+### 5. Nessun dato passato (atteso: 400)
+PATCH {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+Content-Type: application/json
+
+{ }
+
+### 6. Corpo vuoto (atteso: 400)
+PATCH {{url}}/api/portafogli/{{nuovoPortafoglio.response.body.id}}
+Content-Type: application/json
+
+### 7. Portafoglio non esistente (atteso: 404)
+PATCH {{url}}/api/portafogli/999
+Content-Type: application/json
+
+{ "archiviato": false }
+
+### 8. Id non valido (atteso: 400)
+PATCH {{url}}/api/portafogli/abc
+Content-Type: application/json
+
+{ "archiviato": false }

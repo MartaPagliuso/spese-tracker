@@ -6,18 +6,34 @@ const router = express.Router();
 // -------------- GET --------------
 
 router.get('/', async (req, res) => {
+
+  const { portafoglio_id, categoria_id, dal, al } = req.query;
+
+  for (const valore of [portafoglio_id, categoria_id, dal, al]) {
+    if (valore !== undefined && typeof valore !== 'string')
+      return res.status(400).json({ errore: 'Parametri di ricerca non validi' });
+  }
+
   try {
     const result = await pool.query(`
       SELECT m.id, m.data::text as data, p.nome as portafoglio, c.nome as categoria, c.tipo, m.importo, m.descrizione
       FROM movimento m
       JOIN portafoglio p ON p.id = m.portafoglio_id
       JOIN categoria c ON c.id = m.categoria_id
-      ORDER BY m.data DESC, m.id DESC
-    `);
+      WHERE ($1::bigint IS NULL OR m.portafoglio_id = $1)
+        AND ($2::bigint IS NULL OR m.categoria_id = $2)
+        AND ($3::date IS NULL OR m.data >= $3)
+        AND ($4::date IS NULL OR m.data <= $4)
+      ORDER BY m.data DESC, m.id DESC`,
+      [portafoglio_id ?? null, categoria_id ?? null, dal ?? null, al ?? null]
+    );
 
     res.json(result.rows);
 
   } catch (error) {
+    if (error.code?.startsWith('22'))
+      return res.status(400).json({ errore: 'Formato dei parametri non valido' });
+
     console.error('Errore nel leggere i movimenti: ', error);
     res.status(500).json({ errore: 'Errore interno del server'});
   }

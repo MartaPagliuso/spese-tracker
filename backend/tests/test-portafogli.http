@@ -117,3 +117,30 @@ PATCH {{url}}/api/portafogli/abc
 Content-Type: application/json
 
 { "archiviato": false }
+
+### --------------------- TEST DELETE ---------------------
+
+### Inserisco un portafoglio con "archiviato = true"
+POST {{url}}/api/portafogli
+Content-Type: application/json
+
+{ "nome": "Test Archivio" }
+
+### Faccio la patch
+
+PATCH {{url}}/api/portafogli/4
+Content-Type: application/json
+
+{ "archiviato": true }
+
+### 1. Solo portafogli non archiviati
+GET {{url}}/api/portafogli
+
+### 2. Tutti, compresi gli archiviati
+GET {{url}}/api/portafogli?archiviati=true
+
+### 3. Solo gli attivi
+GET {{url}}/api/portafogli?archiviati=false
+
+### 4. Tipo di dato non valido (atteso: 400)
+GET {{url}}/api/portafogli?archiviati=pippo

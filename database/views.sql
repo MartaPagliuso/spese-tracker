@@ -1,4 +1,4 @@
-CREATE VIEW saldo_portafoglio AS
+CREATE OR REPLACE VIEW saldo_portafoglio AS
 WITH variazioni AS (
   SELECT
     m.portafoglio_id AS portafoglio_id,
@@ -16,7 +16,8 @@ WITH variazioni AS (
 SELECT
   p.id,
   p.nome AS portafoglio,
-  COALESCE(SUM(v.variazione), 0) AS saldo
+  COALESCE(SUM(v.variazione), 0) AS saldo,
+  p.archiviato AS archiviato
 FROM portafoglio p
 LEFT JOIN variazioni v ON v.portafoglio_id = p.id
 GROUP BY p.id, p.nome;

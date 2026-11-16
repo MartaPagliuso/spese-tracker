@@ -6,8 +6,13 @@ const router = express.Router();
 // -------------- GET --------------
 
 router.get('/', async (req, res) => {
+  const { archiviati } = req.query;
+
+  if (archiviati !== undefined && archiviati !== 'true' && archiviati !== 'false')
+    return res.status(400).json({ errore: 'Il parametro "archiviati" deve essere true o false' });
+
   try {
-    const result = await pool.query('SELECT id, portafoglio, saldo FROM saldo_portafoglio ORDER BY portafoglio');
+    const result = await pool.query('SELECT id, portafoglio, saldo, archiviato FROM saldo_portafoglio WHERE $1::boolean OR NOT archiviato ORDER BY portafoglio', [archiviati === 'true']);
     res.json(result.rows);
   } catch (error) {
     console.error('Errore nel leggere i portafogli: ', error);
